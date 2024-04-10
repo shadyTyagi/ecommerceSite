@@ -1,47 +1,49 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import ProductList from "../ProductList";
 import "./index.css";
 
-const category = [
+const categories = [
   {
     id: 1,
-    name: "Smartphones",
+    name: "smartphones",
   },
   {
     id: 2,
-    name: "Laptops",
+    name: "laptops",
   },
   {
     id: 3,
-    name: "Fragrances",
+    name: "fragrances",
   },
   {
     id: 4,
-    name: "Skincare",
+    name: "skincare",
   },
   {
     id: 5,
-    name: "Groceries",
+    name: "groceries",
   },
   {
     id: 6,
-    name: "Home-decoration",
+    name: "home-decoration",
   },
 ];
 
 function Products() {
-  const [useData, setUseData] = useState([]);
-  const [useSearchInput, setSearchInput] = useState("");
-  const [isActive, setIsActive] = useState("");
-  const [updatedFilter, setUpdatedFilter] = useState([]);
+  const [productData, setProductData] = useState([]);
+  const [searchInput, setSearchInput] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
+
+  useEffect(() => {
+    getData();
+  }, [selectedCategory]);
 
   const getData = async () => {
-    const respone = await fetch(
-      `https://dummyjson.com/products&category${isActive}`
+    const response = await fetch(
+      `https://dummyjson.com/products?&category=${selectedCategory}`
     );
-    const data = await respone.json();
-    // console.log(data);
-    const formatedData = data.products.map((eachItem) => ({
+    const data = await response.json();
+    const formattedData = data.products.map((eachItem) => ({
       id: eachItem.id,
       brand: eachItem.brand,
       category: eachItem.category,
@@ -52,51 +54,43 @@ function Products() {
       thumbnail: eachItem.thumbnail,
       title: eachItem.title,
     }));
-    setUseData(formatedData);
+    setProductData(formattedData);
   };
 
-  console.log(useData);
-  useEffect(() => {
-    getData();
-  });
-
-  const onChangeInput = (e) => {
-    setSearchInput(e.target.value);
-  };
-
-  const onClickSearchButton = () => {
-    const searchResult = useData.filter((eachItem) =>
-      eachItem.brand.toLowerCase().includes(useSearchInput.toLowerCase())
+  const handleSearch = () => {
+    const searchResult = productData.filter((item) =>
+      item.brand.toLowerCase().includes(searchInput.toLowerCase())
     );
-    setUseData(searchResult);
+    setProductData(searchResult);
   };
 
-  const onChangeSelectOp = (e) => {
-    setIsActive(e.target.value);
-    console.log(e.target.value);
-    const categoryResult = useData.filter((eachItem) =>
-      eachItem.category.includes(isActive.toLowerCase())
-    );
-    setUseData(categoryResult, getData());
+  const handleCategoryChange = (e) => {
+    setSelectedCategory(e.target.value);
   };
-  console.log(isActive.toLowerCase());
+  console.log(selectedCategory);
+  console.log(productData);
 
   return (
     <div className="bg-container">
-      <select onChange={onChangeSelectOp} value={isActive}>
-        {category.map((eachCat) => (
-          <option value={eachCat.name} key={eachCat.id}>
-            {eachCat.name}
+      <select onChange={handleCategoryChange} value={selectedCategory}>
+        <option value="">All Categories</option>
+        {categories.map((category) => (
+          <option value={category.name} key={category.id}>
+            {category.name}
           </option>
         ))}
       </select>
       <div>
         <div>
-          <input type="text" onChange={onChangeInput} />
-          <button onClick={onClickSearchButton}>Search</button>
+          <input
+            type="text"
+            onChange={(e) => setSearchInput(e.target.value)}
+            value={searchInput}
+          />
+          <button onClick={handleSearch}>Search</button>
         </div>
         <ul className="product-list">
-          {useData.map((item) => (
+          {productData.map((item) => (
             <ProductList productData={item} key={item.id} />
           ))}
         </ul>
